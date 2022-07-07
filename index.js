@@ -1,7 +1,6 @@
 import lodash from "lodash";
 import schedule from "node-schedule";
 import {gacha} from './apps/gachaDIY.js'
-//import __config from './config.js';
 import { currentVersion } from "./components/Changelog.js";
 import {
   rule as adminRule,

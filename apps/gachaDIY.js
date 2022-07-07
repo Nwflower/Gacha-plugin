@@ -5,7 +5,7 @@ import fs from "fs";
 import { Cfg } from "../components/index.js";
 
 //五星基础概率(0-10000)
-const chance5 = 60;
+let chance5 = 60;
 //四星基础概率
 const chance4 = 510;
 
@@ -71,6 +71,10 @@ function gachaall(arr,dir){
     arr.push(val);
   }
 }
+//获取概率
+function getchance(key, config){
+  return Cfg.get(key, config);
+}
 
 //#十连
 export async function gacha(e) {
@@ -82,6 +86,8 @@ export async function gacha(e) {
     return false;
     //替换开关没有打开
   }
+
+  chance5=getchance("gacha.chance5", 60);
 
   let user_id = e.user_id;
   let name = e.sender.card;

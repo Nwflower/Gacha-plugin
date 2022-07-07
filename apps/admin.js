@@ -9,6 +9,7 @@ import Common from "../components/Common.js";
 const require = createRequire(import.meta.url);
 let cfgMap = {
 	"覆盖": "gacha.DIY",
+	"五星角色概率": "gacha.chance5",
 };
 let sysCfgReg = `^#抽卡设置\s*(${lodash.keys(cfgMap).join("|")})?\s*(.*)$`;
 export const rule = {
@@ -41,11 +42,9 @@ export async function sysCfg(e, { render }) {
 		
 		let cfgKey = cfgMap[regRet[1]];
 
-		if (cfgKey === "sys.scale") {
-			val = Math.min(200, Math.max(50, val * 1 || 100));
-		}else if(cfgKey === "mb.len"){
-			val= Math.min(2,Math.max(val,0));
-		} else {
+		if (cfgKey === "gacha.chance5") {
+			val = Math.min(10000, Math.max(0, val * 1 || 100));
+		}else {
 			val = !/关闭/.test(val);
 		}
 		if (cfgKey) {
@@ -55,7 +54,9 @@ export async function sysCfg(e, { render }) {
 
 	let cfg = {
 		gachadiy: getStatus("gacha.DIY", true),
+		gachachance5: Cfg.get("gacha.chance5", 60),
 	}
+	
 	console.log(cfg)
 
 
