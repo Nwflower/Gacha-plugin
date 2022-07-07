@@ -20,7 +20,7 @@ const _gth = _pth+"/plugins/gacha-plugin";
 export const rule = {
   gacha: {
     reg: "^#*(10|[武器池]*[十]+|抽|单)[连抽卡奖][123武器池]*$",
-    priority: 98,
+    priority: __config.useGachaDIY ? 9 : 9999,
     describe: "自定义抽卡",
   },
 };
@@ -180,7 +180,7 @@ export async function gacha(e) {
 
 
   if (e.msg.includes("武器")) {
-    return gachaWeapon(e, gachaData, upW4, upW5);
+    return gachaWeapon(e, gachaData);
   }
 
 
@@ -365,42 +365,11 @@ function getEnd() {
 }
 
 //#十连武器
-async function gachaWeapon(e, gachaData, upW4, upW5) {
+async function gachaWeapon(e, gachaData) {
   let user_id = e.user_id;
   //角色，武器抽卡限制是否分开
   let LimitSeparate = e.groupConfig.LimitSeparate || 0;
 
-  if (!gachaData.weapon) {
-    gachaData.weapon = {
-      num4: 0, //4星保底数
-      num5: 0, //5星保底数
-      lifeNum: 0, //命定值
-      type: 1, //0-取消 1-武器1 2-武器2
-      bingWeapon: upW5[0],
-    };
-  } else {
-    if (gachaData.weapon.bingWeapon) {
-      if (!upW5.includes(gachaData.weapon.bingWeapon)) {
-        gachaData.weapon.bingWeapon = upW5[0];
-        gachaData.weapon.type = 1;
-        gachaData.weapon.lifeNum = 0;
-      }
-    } else if (gachaData.weapon.type == 1) {
-      gachaData.weapon.bingWeapon = upW5[0];
-      gachaData.weapon.lifeNum = 0;
-    }
-  }
-
-  let bingWeapon;
-  if (gachaData.weapon.type > 0) {
-    if (upW5[gachaData.weapon.type - 1]) {
-      bingWeapon = upW5[gachaData.weapon.type - 1];
-    }
-  }
-
-  //去除当前up的四星
-  weapon4 = lodash.difference(weapon4, upW4);
-  weapon5 = lodash.difference(weapon5, upW5);
 
   //每日抽卡数+1
   if (LimitSeparate) {
@@ -546,8 +515,6 @@ async function gachaWeapon(e, gachaData, upW4, upW5) {
     info: info,
     list: list,
     isWeapon: true,
-    bingWeapon: bingWeapon,
-    lifeNum: gachaData.weapon.lifeNum,
     fiveNum:res5.length,
   });
 
