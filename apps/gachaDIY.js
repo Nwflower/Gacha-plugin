@@ -2,7 +2,6 @@ import { getPluginRender,render } from "../../../lib/render.js";
 import { segment } from "oicq";
 import lodash from "lodash";
 import fs from "fs";
-import __config from '../config.js';
 import { Cfg } from "../components/index.js";
 
 //五星基础概率(0-10000)
@@ -21,7 +20,7 @@ const _gth = _pth+"/plugins/gacha-plugin";
 export const rule = {
   gacha: {
     reg: "^#*(10|[武器池]*[十]+|抽|单)[连抽卡奖][123武器池]*$",
-    priority: __config.useGachaDIY ? 9 : 9999,
+    priority: 9,
     describe: "自定义抽卡",
   },
 };
