@@ -14,13 +14,10 @@
 #### 安装教程
 
 ```
-使用gitee
-git clone https://gitee.com/Nwflower/gacha-plugin.git ./plugins/gacha-plugin/
-
 使用github
 git clone https://github.com/Nwflower/gacha-plugin.git ./plugins/gacha-plugin/
 ```
-
+相应的gitee仓库地址为测试通道，经常会抽风bug故不推荐
 
 #### 使用说明
 
@@ -40,3 +37,4 @@ git clone https://github.com/Nwflower/gacha-plugin.git ./plugins/gacha-plugin/
 - 最后再求个star，你的支持是维护本项目的动力~~
 - 图片素材来源于网络，仅供交流学习使用
 - 严禁用于任何商业用途和非法行为"# Gacha-plugin" 
+交流群：240979646
