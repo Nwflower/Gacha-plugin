@@ -3,6 +3,7 @@ import { segment } from "oicq";
 import lodash from "lodash";
 import fs from "fs";
 import __config from '../config.js';
+import { Cfg } from "../components/index.js";
 
 //五星基础概率(0-10000)
 const chance5 = 60;
@@ -50,18 +51,18 @@ await init();
 
 export async function init(isUpdate) {
   //角色类型json文件
-  element = JSON.parse(fs.readFileSync(_pth+"/plugins/gacha-plugin/resources/js/element.json", "utf8"));
+  element = JSON.parse(fs.readFileSync(_pth+"/plugins/gacha-plugin/resources/gacha/element.json", "utf8"));
 
   let version = isUpdate ? new Date().getTime() : 0;
-  genshin = await import(`../resources/js/roleId.js?version=${version}`);
+  genshin = await import(`../resources/gacha/roleId.js?version=${version}`);
   count = {};
 
   //根据文件动态加载角色、武器列表
-  gachaall(role5,_gth+"/resources/img/character/5/");
-  gachaall(role4,_gth+"/resources/img/character/4/");
-  gachaall(weapon3,_gth+"/resources/img/weapon/3/");
-  gachaall(weapon4,_gth+"/resources/img/weapon/4/");
-  gachaall(weapon5,_gth+"/resources/img/weapon/5/");
+  gachaall(role5,_gth+"/resources/gacha/img/character/5/");
+  gachaall(role4,_gth+"/resources/gacha/img/character/4/");
+  gachaall(weapon3,_gth+"/resources/gacha/img/weapon/3/");
+  gachaall(weapon4,_gth+"/resources/gacha/img/weapon/4/");
+  gachaall(weapon5,_gth+"/resources/gacha/img/weapon/5/");
 }
 
 function gachaall(arr,dir){
@@ -77,6 +78,12 @@ export async function gacha(e) {
   if (e.img || e.hasReply) {
     return;
   }
+
+  if (!Cfg.get("gacha.DIY", true)) {
+    return false;
+    //替换开关没有打开
+  }
+
   let user_id = e.user_id;
   let name = e.sender.card;
   let group_id = e.group_id;
@@ -311,7 +318,7 @@ export async function gacha(e) {
     info = "";
   }
 
-  let base64 = await getPluginRender("gacha-plugin")("pages", "gacha", {
+  let base64 = await getPluginRender("gacha-plugin")("gacha", "gacha", {
     save_id: user_id,
     name: name,
     info: info,
@@ -509,7 +516,7 @@ async function gachaWeapon(e, gachaData) {
     info = `${role5.name}「${role5.num}抽」`;
   }
 
-  let base64 = await getPluginRender("gacha-plugin")("pages", "gacha", {
+  let base64 = await getPluginRender("gacha-plugin")("gacha", "gacha", {
     save_id: user_id,
     name: e.sender.card,
     info: info,

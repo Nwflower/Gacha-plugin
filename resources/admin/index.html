@@ -1,0 +1,35 @@
+{{extend defaultLayout}}
+
+{{block 'css'}}
+
+<link rel="stylesheet" type="text/css" href="{{_res_path}}/admin/index.css" />
+<style>
+	.container {
+		background: url("{{_res_path}}/admin/img/bg.png") #000144  top  !important;
+		background-size: 520px auto;
+		width: 520px;
+	}
+</style>
+{{/block}}
+{{block 'main'}}
+
+<div class="info_box">
+	<div class="head-box type{{bgType}}">
+		<div class="label">抽卡插件</div>
+		<div class="title">自定义抽卡管理面板</div>
+	</div>
+</div>
+<div class="cfg-box">
+  <div class="cfg-group">功能覆盖</div>
+  <ul class="cfg-ul">
+    <li class="cfg-li">
+      <div class="cfg-line">
+        抽卡功能覆盖
+        <span class="cfg-hint"> #抽卡设置覆盖 + 开启/关闭</span>
+        {{@gachadiy}}
+      </div>
+	  <div class="cfg-desc">覆盖云崽自定义的抽卡功能</div>
+    </li>	
+  </ul>
+</div>
+{{/block}}
