@@ -23,11 +23,12 @@ git clone https://github.com/Nwflower/gacha-plugin.git ./plugins/gacha-plugin/
 
 本插件为云崽bot的辅助插件 地址https://gitee.com/Le-niao/Yunzai-Bot
 
-
+全员卡池默认无大保底无定轨，添加图片添加到resource/gacha/img/目录下的weapon和character的对应星级中，重启即可。要求图片分辨率150\*480;
 
 #### 命令说明
-1. 发送 #十连 自定义卡池。
-2. 暂不支持其他命令
+1. 继承了原抽卡命令`#十连`等
+2. 打开设置使用`#抽卡设置`
+3. 覆盖开关默认打开
 
 ## 其他
 <!---

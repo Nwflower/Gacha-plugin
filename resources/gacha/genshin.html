@@ -15,46 +15,44 @@
       {{/if}}
       {{if isWeapon}}
         {{if bingWeapon}}
-          <div class="info-bg poor-info"></div>
-          <div class="info-bg poor-bing"></div>
+          <div class="info-bg poor-info">定轨：{{bingWeapon}}</div>
+          <div class="info-bg poor-bing">命定值：{{lifeNum}}</div>
         {{/if}}
-
       {{else if poolName}}
-      <div class="info-bg poor-info">{</div>
+      <div class="info-bg poor-info">{{poolName}}</div>
       {{/if}}
-
       <div class="list-box">
         {{each list}}
           <div class="item">
             <div class="item-bg-box">
-              <img class="item-bg" src="{{_res_path}}/gacha/img/items/bg.png"/>
+              <img class="item-bg" src="{{_sys_res_path}}/genshin/gacha/items/bg.png"/>
               {{if $value.type=='weapon' && $value.star==5}}
-              <img class="item-bg-weapon" src="{{_res_path}}/gacha/img/items/bgWeapon.png"/>
+              <img class="item-bg-weapon" src="{{_sys_res_path}}/genshin/gacha/items/bgWeapon.png"/>
               {{/if}}
             </div>
-            <img class="item-shadow" src="{{_res_path}}/gacha/img/items/shadow-{{$value.star}}.png"/>
-            <img class="item-shadow2" src="{{_res_path}}/gacha/img/items/bg2.png"/>
+            <img class="item-shadow" src="{{_sys_res_path}}/genshin/gacha/items/shadow-{{$value.star}}.png"/>
+            <img class="item-shadow2" src="{{_sys_res_path}}/genshin/gacha/items/bg2.png"/>
             {{if $value.type=='weapon'}}
-              <div class="item-img-box">
-                <img class="item-character-img" src="{{_res_path}}/gacha/img/weapon/{{$value.star}}/{{$value.name}}.png"/>
+              <div class="item-weapon-box">
+                <img class="item-weapon-img" src="{{_sys_res_path}}/genshin/gacha/{{$value.type}}/{{$value.name}}.png"/>
               </div>
             {{else}}
               <div class="item-img-box">
-                <img class="item-character-img" src="{{_res_path}}/gacha/img/character/{{$value.star}}/{{$value.name}}.png"/>
+                <img class="item-character-img" src="{{_sys_res_path}}/genshin/gacha/character/{{$value.name}}.png"/>
               </div>
             {{/if}}
             
-            <div class="times">{{$value.name}}</div>
-
-            <img class="item-element"  src="{{_res_path}}/gacha/img/items/{{$value.element}}.png"/>
-            <img class="item-star" src="{{_res_path}}/gacha/img/items/s-{{$value.star}}.png"/>
+            {{if $value.star==5 && fiveNum < 4 }}
+            <div class="times">「{{$value.num}}抽」</div>
+            {{/if}}
+            <img class="item-element"  src="{{_sys_res_path}}/genshin/gacha/items/{{$value.element}}.png"/>
+            <img class="item-star" src="{{_sys_res_path}}/genshin/gacha/items/s-{{$value.star}}.png"/>
           </div>
         {{/each}}
       </div>
       <div class="logo">Created By Yunzai-Bot & Gacha-plugin</div>
     </div>
   </body>
-
   <svg viewBox="0 0 302.22 1333.94" height="0" width="0">
     <clipPath id="wishframe" transform="scale(0.003308 0.00074965)" clipPathUnits="objectBoundingBox">
       <path
@@ -62,5 +60,4 @@
       />
     </clipPath>
   </svg>
-
 </html>

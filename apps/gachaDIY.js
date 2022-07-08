@@ -1,24 +1,15 @@
-import { getPluginRender,render } from "../../../lib/render.js";
+import { getPluginRender } from "../../../lib/render.js";
 import { segment } from "oicq";
 import lodash from "lodash";
 import fs from "fs";
 import { Cfg } from "../components/index.js";
 
-//五星基础概率(0-10000)
-let chance5 = 60;
-//四星基础概率
-const chance4 = 510;
-
-//五星武器基础概率
-const chanceW5 = 70;
-//四星武器基础概率
-const chanceW4 = 600;
 
 const _pth = process.cwd();
 const _gth = _pth+"/plugins/gacha-plugin";
 
 export const rule = {
-  gacha: {
+  gachaDIY: {
     reg: "^#*(10|[武器池]*[十]+|抽|单)[连抽卡奖][123武器池]*$",
     priority: 9,
     describe: "自定义抽卡",
@@ -26,8 +17,8 @@ export const rule = {
 };
 
 //创建html文件夹
-if (!fs.existsSync(`./data/html/genshin/gachaDIY/`)) {
-  fs.mkdirSync(`./data/html/genshin/gachaDIY/`);
+if (!fs.existsSync(`./data/html/genshin/gacha/`)) {
+  fs.mkdirSync(`./data/html/genshin/gacha/`);
 }
 
 //五星角色
@@ -51,11 +42,9 @@ await init();
 export async function init(isUpdate) {
   //角色类型json文件
   element = JSON.parse(fs.readFileSync(_pth+"/plugins/gacha-plugin/resources/gacha/element.json", "utf8"));
-
   let version = isUpdate ? new Date().getTime() : 0;
   genshin = await import(`../resources/gacha/roleId.js?version=${version}`);
   count = {};
-
   //根据文件动态加载角色、武器列表
   gachaall(role5,_gth+"/resources/gacha/img/character/5/");
   gachaall(role4,_gth+"/resources/gacha/img/character/4/");
@@ -77,17 +66,10 @@ function getchance(key, config){
 }
 
 //#十连
-export async function gacha(e) {
-  if (e.img || e.hasReply) {
-    return;
-  }
-
-  if (!Cfg.get("gacha.DIY", true)) {
+export async function gachaDIY(e) {
+  if (e.img || e.hasReply || !Cfg.get("gacha.DIY", true) || Cfg.get("gacha.type", 1) != 0) {
     return false;
-    //替换开关没有打开
   }
-
-  chance5=getchance("gacha.chance5", 60);
 
   let user_id = e.user_id;
   let name = e.sender.card;
@@ -95,6 +77,7 @@ export async function gacha(e) {
   let type = e.msg.includes("武器") ? "weapon" : "role";
 
   let upType = 1;
+
   if (e.msg.indexOf("2") != -1) {
     upType = 2; //角色up卡池2
   }
@@ -128,6 +111,7 @@ export async function gacha(e) {
     return true;
   }
 
+  //初始化抽卡数据
   if (!gachaData) {
     gachaData = {
       num4: 0, //4星保底数
@@ -141,7 +125,6 @@ export async function gacha(e) {
     };
   } else {
     gachaData = JSON.parse(gachaData);
-
     if (new Date().getTime() >= gachaData.today.expire) {
       gachaData.today = { num: 0, weaponNum: 0, role: [], expire: end.dayEnd };
     }
@@ -155,9 +138,9 @@ export async function gacha(e) {
     todayNum = gachaData.today.weaponNum;
   }
 
+  //如果次数已经用完
   if (todayNum >= dayNum && !e.isMaster) {
-    let msg = lodash.truncate(name, { length: 8 });
-
+    let msg = lodash.truncate(name, { length: 30 });
     if (gachaData.today.role.length > 0) {
       msg += "\n今日五星：";
       if(gachaData.today.role.length>=4){
@@ -168,7 +151,6 @@ export async function gacha(e) {
         }
       }
       msg = msg.trim("\n");
-
       if (gachaData.week.num - gachaData.today.role.length >= 1) {
         msg += `\n本周：${gachaData.week.num}个五星`;
       }
@@ -178,12 +160,10 @@ export async function gacha(e) {
       } else {
         msg += `今日角色已抽\n累计${gachaData.num5}抽无五星`;
       }
-
       if (gachaData.week.num >= 2) {
         msg += `\n本周：${gachaData.week.num}个五星`;
       }
     }
-
     //回复消息
     e.reply(msg);
     //返回true不再向下执行
@@ -208,11 +188,11 @@ export async function gacha(e) {
 
   //循环十次
   for (let i = 1; i <= 10; i++) {
-    let tmpChance5 = chance5;
+    let tmpChance5 = getchance("gacha.c5", 60);
 
     //增加双黄概率
     if (gachaData.week.num == 1) {
-      tmpChance5 = chance5 * 2;
+      tmpChance5 = getchance("gacha.c5", 60) * 2;
     }
 
     //90次都没中五星
@@ -225,7 +205,7 @@ export async function gacha(e) {
     }
     //60抽后逐渐增加概率
     else if (gachaData.num5 >= 60) {
-      tmpChance5 = chance5 + (gachaData.num5 - 50) * 40;
+      tmpChance5 = getchance("gacha.c5", 60) + (gachaData.num5 - 50) * 40;
     }
 
     //抽中五星
@@ -241,29 +221,20 @@ export async function gacha(e) {
       let tmp_name = "";
       //去除UP验证
       tmp_name = role5[getRandomInt(role5.length)];
-
       gachaData.today.role.push({ name: tmp_name, num: nowCardNum });
       gachaData.week.num++;
 
-
-      res5.push({
-        name: tmp_name,
-        star: 5,
-        type: "character",
-        num: nowCardNum,
-        element: trownullelement(element[tmp_name]),
-      });
+      redispushdata(res5,tmp_name,5,"character",nowCardNum);
       continue;
     }
 
     //没有五星，保底数+1
     gachaData.num5++;
-
-    let tmpChance4 = chance4;
+    let tmpChance4 = getchance("gacha.c4", 510);
 
     //9次都没中四星 概率100%
     if (gachaData.num4 >= 9) {
-      tmpChance4 = chance4 + 10000;
+      tmpChance4 = 10000;
     }
     //6次后逐渐增加概率
     else if (gachaData.num4 >= 5) {
@@ -277,21 +248,9 @@ export async function gacha(e) {
 
         //一半概率武器 一半4星
         if (getRandomInt(100) <= 50) {
-          let tmp_name = role4[getRandomInt(role4.length)];
-          resC4.push({
-            name: tmp_name,
-            star: 4,
-            type: "character",
-            element: trownullelement(element[tmp_name]),
-          });
+          redispushdata(resC4,role4[getRandomInt(role4.length)],4,"character",undefined);
         } else {
-          let tmp_name = weapon4[getRandomInt(weapon4.length)];
-          resW4.push({
-            name: tmp_name,
-            star: 4,
-            type: "weapon",
-            element: trownullelement(element[tmp_name]),
-          });
+          redispushdata(resW4,weapon4[getRandomInt(weapon4.length)],4,"weapon",undefined);
         }
       continue;
     }
@@ -300,25 +259,15 @@ export async function gacha(e) {
     gachaData.num4++;
 
     //随机三星武器
-    let tmp_name = weapon3[getRandomInt(weapon3.length)];
-    resW3.push({
-      name: tmp_name,
-      star: 3,
-      type: "weapon",
-      element: trownullelement(element[tmp_name]),
-    });
+    redispushdata(resW3,weapon3[getRandomInt(weapon3.length)],3,"weapon",undefined);
   }
 
   let list = [...res5, ...resC4, ...resW4, ...resW3];
-
   let info = `累计「${gachaData.num5}抽」`;
-
   if (res5.length > 0) {
     let role5 = res5[res5.length - 1];
     info = `${role5.name}「${role5.num}抽」`;
   }
-
-
   if (res5.length >= 4) {
     info = "";
   }
@@ -403,26 +352,24 @@ async function gachaWeapon(e, gachaData) {
 
   //循环十次
   for (let i = 1; i <= 10; i++) {
-    let tmpChance5 = chanceW5;
-
+    let tmpChance5 = getchance("gacha.w5", 70);
     //增加双黄概率
     if (gachaData.week.num == 1) {
-      tmpChance5 = chanceW5 * 3;
+      tmpChance5 = getchance("gacha.w5", 70) * 3;
     }
-
     //80次都没中五星
     if (gachaData.weapon.num5 >= 80) {
       tmpChance5 = 10000;
     }
     //62抽后逐渐增加概率
     else if (gachaData.weapon.num5 >= 62) {
-      tmpChance5 = chanceW5 + (gachaData.weapon.num5 - 61) * 700;
+      tmpChance5 = getchance("gacha.w5", 70) + (gachaData.weapon.num5 - 61) * 700;
     }
     //50抽后逐渐增加概率
     else if (gachaData.weapon.num5 >= 45) {
-      tmpChance5 = chanceW5 + (gachaData.weapon.num5 - 45) * 60;
+      tmpChance5 = getchance("gacha.w5", 70) + (gachaData.weapon.num5 - 45) * 60;
     } else if (gachaData.weapon.num5 >= 10 && gachaData.weapon.num5 <= 20) {
-      tmpChance5 = chanceW5 + (gachaData.weapon.num5 - 10) * 30;
+      tmpChance5 = getchance("gacha.w5", 70) + (gachaData.weapon.num5 - 10) * 30;
     }
 
     //抽中五星
@@ -435,33 +382,20 @@ async function gachaWeapon(e, gachaData) {
       //没有四星，四星保底数+1
       gachaData.weapon.num4++;
 
-
-      let tmp_name = "";
-      //去除UP验证
-      tmp_name = weapon5[getRandomInt(weapon5.length)];
-
-
+      let tmp_name = weapon5[getRandomInt(weapon5.length)];
       gachaData.today.role.push({ name: tmp_name, num: nowCardNum });
       gachaData.week.num++;
-
-      res5.push({
-        name: tmp_name,
-        star: 5,
-        type: "weapon",
-        num: nowCardNum,
-        element: trownullelement(element[tmp_name]),
-      });
+      redispushdata(res5,tmp_name,5,"weapon",nowCardNum);
       continue;
     }
 
     //没有五星，保底数+1
     gachaData.weapon.num5++;
-
-    let tmpChance4 = chance4;
+    let tmpChance4 = getchance("gacha.w4", 600);
 
     //9次都没中四星 概率100%
     if (gachaData.weapon.num4 >= 9) {
-      tmpChance4 = chanceW4 + 10000;
+      tmpChance4 = 10000;
     }
     //6次后逐渐增加概率
     else if (gachaData.weapon.num4 >= 5) {
@@ -472,39 +406,19 @@ async function gachaWeapon(e, gachaData) {
     if (getRandomInt(10000) <= tmpChance4) {
       //保底四星数清零
       gachaData.weapon.num4 = 0;
-
       //一半概率武器 一半角色
       if (getRandomInt(100) <= 50) {
-          let tmp_name = role4[getRandomInt(role4.length)];
-          resC4.push({
-            name: tmp_name,
-            star: 4,
-            type: "character",
-            element: trownullelement(element[tmp_name]),
-          });
+        redispushdata(resC4,role4[getRandomInt(role4.length)],4,"character",undefined);
         } else {
-          let tmp_name = weapon4[getRandomInt(weapon4.length)];
-          resW4.push({
-            name: tmp_name,
-            star: 4,
-            type: "weapon",
-            element: trownullelement(element[tmp_name]),
-          });
+        redispushdata(resW4,weapon4[getRandomInt(weapon4.length)],4,"weapon",undefined);
       }
       continue;
     }
-
     //没有四星，保底数+1
     gachaData.weapon.num4++;
 
     //随机三星武器
-    let tmp_name = weapon3[getRandomInt(weapon3.length)];
-    resW3.push({
-      name: tmp_name,
-      star: 3,
-      type: "weapon",
-      element: trownullelement(element[tmp_name]),
-    });
+    redispushdata(resW3,weapon3[getRandomInt(weapon3.length)],3,"weapon",undefined);
   }
 
   let key = `genshin:gacha:${user_id}`;
@@ -521,6 +435,7 @@ async function gachaWeapon(e, gachaData) {
     info = `${role5.name}「${role5.num}抽」`;
   }
 
+  //制图
   let base64 = await getPluginRender("gacha-plugin")("gacha", "gacha", {
     save_id: user_id,
     name: e.sender.card,
@@ -548,9 +463,21 @@ async function gachaWeapon(e, gachaData) {
 function trownullelement(name)
 {
   //去除空图片
-  if(name==undefined)
+  if(name===undefined)
   {
     name="null";
   }
   return name;
+}
+
+//添加角色数据
+function redispushdata(object,tmp_name,starnum,typename,nowCardNum)
+{
+  return object.push({
+    name: tmp_name,
+    star: starnum,
+    type: typename,
+    num: nowCardNum,
+    element: trownullelement(element[tmp_name]),
+  });
 }
