@@ -10,7 +10,6 @@ try {
     cfg = JSON.parse(fs.readFileSync(_cfgPath + "cfg.json", "utf8")) || {};
   }
 } catch (e) {
-  // do nth
 }
 
 let Cfg = {

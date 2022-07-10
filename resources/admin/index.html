@@ -39,7 +39,8 @@
         <div class="cfg-desc">0为全员抽卡，1为原神卡池</div>
     </li>
   </ul>
-</div><div class="cfg-box">
+</div>
+<div class="cfg-box">
   <div class="cfg-group">概率设置</div>
   <ul class="cfg-ul">
 
@@ -95,6 +96,68 @@
         <div class="cfg-status">{{@gachaconfigchance}}</div>
       </div>
       <div class="cfg-desc">将概率恢复默认概率</div>
+    </li>
+
+  </ul>
+</div>
+
+
+<div class="cfg-box">
+  <div class="cfg-group">原神卡池设置</div>
+  <ul class="cfg-ul">
+
+    <li class="cfg-li">
+      <div class="cfg-line-no-status">
+        祈愿五星角色
+        <span class="cfg-hint">#抽卡设置五星角色万叶,可莉</span>
+        <div class="cfg-status"></div>
+      </div>
+      <div class="cfg-desc">设置卡池五星角色,当前角色:{{@genshincharact5}}</div>
+    </li>
+
+    <li class="cfg-li">
+      <div class="cfg-line-no-status">
+        祈愿四星角色
+        <span class="cfg-hint">#抽卡设置四星角色早柚,雷泽,行秋</span>
+        <div class="cfg-status"></div>
+      </div>
+      <div class="cfg-desc">设置卡池四星角色,当前角色:{{@genshincharact4}}</div>
+    </li>
+
+    <li class="cfg-li">
+      <div class="cfg-line-no-status">
+        祈愿五星武器
+        <span class="cfg-hint">#抽卡设置五星武器苍古自由之誓,四风原典</span>
+        <div class="cfg-status"></div>
+      </div>
+      <div class="cfg-desc">设置卡池五星武器,不允许输入别名,当前武器:{{@genshinweapon5}}</div>
+    </li>
+
+    <li class="cfg-li">
+      <div class="cfg-line-no-status">
+        祈愿四星武器
+        <span class="cfg-hint"> #抽卡设置四星武器+武器列表</span>
+        <div class="cfg-status"></div>
+      </div>
+      <div class="cfg-desc">设置卡池五星武器,当前武器:{{@genshinweapon4}}</div>
+    </li>
+
+    <li class="cfg-li">
+      <div class="cfg-line-no-status">
+        随机卡池
+        <span class="cfg-hint"> #抽卡设置随机卡池</span>
+        <div class="cfg-status"></div>
+      </div>
+      <div class="cfg-desc">随机生成角色卡池</div>
+    </li>
+
+    <li class="cfg-li">
+      <div class="cfg-line-no-status">
+        卡池同步
+        <span class="cfg-hint"> #抽卡设置卡池同步</span>
+        <div class="cfg-status"></div>
+      </div>
+      <div class="cfg-desc">同步机器人原生卡池</div>
     </li>
 
   </ul>
