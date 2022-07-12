@@ -6,7 +6,7 @@ import { Cfg,Gcfun } from "../components/index.js";
 
 export const rule = {
   Genshingacha: {
-    reg: "^#*(10|[武器池]*[十]+|抽|单)[连抽卡奖][123武器池]*$",
+    reg: "^#*(10|[武器池]*([一二三四五六七八九]?[十百]+)|抽|单)[连抽卡奖][123武器池]*$",
     priority: 10,
     describe: "【十连，十连2，十连武器】模拟原神抽卡",
   },
@@ -81,9 +81,7 @@ export async function Genshingacha(e) {
   let dayNum = e.groupConfig.gachaDayNum || 1;
   //角色，武器抽卡限制是否分开
   let LimitSeparate = e.groupConfig.LimitSeparate || 0;
-
   let key = `genshin:gacha:${user_id}`;
-
   let gachaData = await global.redis.get(key);
 
   //获取结算时间
@@ -175,122 +173,108 @@ export async function Genshingacha(e) {
   }
   //去除当前up的四星
   role4 = lodash.difference(role4, up4);
-  //每日抽卡数+1
-  gachaData.today.num++;
-  //数据重置
-  let res5 = [],
-    resC4 = [],
-    resW4 = [],
-    resW3 = [];
 
-  //是否大保底
-  let isBigUP = false;
 
-  //循环十次
-  for (let i = 1; i <= 10; i++) {
-    let tmpChance5 = Gcfun.getthechance(getchance("gacha.c5", 60),gachaData.num5++,gachaData.week.num);
-    //抽中五星
-    if (getRandomInt(10000) <= tmpChance5) {
-      //当前抽卡数
-      let nowCardNum = gachaData.num5;
+  let gachatimes = 1;
+  let eachgacha = e.msg.replace(/(0|1|[武器池]*|十|抽|单|连|卡|奖|2|3)/g, "").trim();
+  let repalcearr = ["一","二","三","四","五","六","七","八","九","百"];
+  for (let i =0;i<=9;i++)
+  {
+    if(eachgacha.indexOf(repalcearr[i])!==-1)
+    {
+      gachatimes = i+1;
+      break;
+    }
+  }
+  if(dayNum<todayNum+gachatimes && !e.isMaster){
+    e.reply("你今天已经抽了很多次了哦~");
+    return true;
+  }
+  let thegachadata = [];
+  for (let shiliancishu =0;shiliancishu<gachatimes;shiliancishu++) {
 
-      //五星抽卡数清零
-      gachaData.num5 = 0;
-      //没有四星，四星保底数+1
+    //每日抽卡数+1
+    gachaData.today.num++;
+    //数据重置
+    let res5 = [],
+      resC4 = [],
+      resW4 = [],
+      resW3 = [];
+
+    //是否大保底
+    let isBigUP = false;
+    //循环十次
+    for (let i = 1; i <= 10; i++) {
+      let star = getagachastar(gachaData, "character");
+      gachaData.num5++;
       gachaData.num4++;
-
-      let tmpUp = getchance("gacha.wai", 50);
-
-      if (gachaData.isUp5 == 1) {
-        tmpUp = 101;
+      let thisgacha;
+      switch (star) {
+        case 5:
+          let nowCardNum = gachaData.num5;
+          gachaData.num5 = 0;
+          thisgacha = getacharacter5(gachaData, Cfg.get("gacha.wai", 50), up5, role5);
+          gachaData = thisgacha.returnData;
+          gachaData.today.role.push({ name: thisgacha.name, num: nowCardNum });
+          gachaData.week.num++;
+          isBigUP = thisgacha.BigUP;
+          redispushdata(res5, thisgacha.name, 5, "character", nowCardNum);
+          break;
+        case 4:
+          gachaData.num4 = 0;
+          thisgacha = geta4(gachaData, up4, role4, weapon4);
+          gachaData = thisgacha.returnData;
+          if (thisgacha.type = "character") {
+            redispushdata(resC4, thisgacha.name, 4, "character", undefined)
+          } else {
+            redispushdata(resW4, thisgacha.name, 4, "weapon", undefined)
+          }
+          ;
+          break;
+        default:
+          //随机三星武器
+          redispushdata(resW3, weapon3[getRandomInt(weapon3.length)], 3, "weapon", undefined);
+          break;
       }
-
-      let tmp_name = "";
-
-      //当祈愿获取到5星角色时，有50%的概率为本期UP角色
-      if (getRandomInt(100) <= tmpUp) {
-        if (gachaData.isUp5 == 1) {
-          isBigUP = true;
-        }
-        //大保底清零
-        gachaData.isUp5 = 0;
-        //up 5星
-        tmp_name = up5[getRandomInt(up5.length)];
-      } else {
-        //大保底
-        gachaData.isUp5 = 1;
-        tmp_name = role5[getRandomInt(role5.length)];
-      }
-
-      gachaData.today.role.push({ name: tmp_name, num: nowCardNum });
-      gachaData.week.num++;
-
-      redispushdata(res5,tmp_name,5,"character",nowCardNum);
-      continue;
     }
 
-    let tmpChance4 = Gcfun.getthechance4(getchance("gacha.c4", 510),gachaData.num4++);
+    let list = [...res5, ...resC4, ...resW4, ...resW3];
 
-    //抽中四星
-    if (getRandomInt(10000) <= tmpChance4) {
-      //保底四星数清零
-      gachaData.num4 = 0;
-      if (gachaData.isUp4 == 1) {
-        //必出四星清零
-        gachaData.isUp4 = 0;
-        var tmpUp = 100;
-      } else {
-        var tmpUp = 50;
+    let info = `累计「${gachaData.num5}抽」`;
+
+    if (res5.length > 0) {
+      let role5 = res5[res5.length - 1];
+      info = `${role5.name}「${role5.num}抽」`;
+      if (isBigUP) {
+        info += "大保底";
       }
-      //当祈愿获取到4星物品时，有50%的概率为本期UP角色
-      if (Math.ceil(Math.random() * 100) <= tmpUp) {
-        //up 4星
-        redispushdata(resC4,up4[getRandomInt(up4.length)],4,"character",undefined);
-      } else {
-        gachaData.isUp4 = 1;
-        //一半概率武器 一半4星
-        if (getRandomInt(100) <= 50) {
-          redispushdata(resC4,role4[getRandomInt(role4.length)],4,"character",undefined);
-        } else {
-          redispushdata(resW4,weapon4[getRandomInt(weapon4.length)],4,"weapon",undefined);
-        }
-      }
-      continue;
+    } else if (res5.length >= 4) {
+      info = "";
     }
 
-    //随机三星武器
-    redispushdata(resW3,weapon3[getRandomInt(weapon3.length)],3,"weapon",undefined);
-  }
-
-  let list = [...res5, ...resC4, ...resW4, ...resW3];
-
-  let info = `累计「${gachaData.num5}抽」`;
-
-  if (res5.length > 0) {
-    let role5 = res5[res5.length - 1];
-    info = `${role5.name}「${role5.num}抽」`;
-    if (isBigUP) {
-      info += "大保底";
-    }
-  }else if (res5.length >= 4) {
-    info = "";
-  }
-
-  let base64 = await getPluginRender("gacha-plugin")("gacha", "genshin", {
-    save_id: user_id,
-    name: name,
-    info: info,
-    list: list,
-    poolName: poolName,
-    fiveNum:res5.length,
-  });
-
-  if (base64) {
-    redis.set(key, JSON.stringify(gachaData), {
-      EX: end.keyEnd,
+    let base64 = await getPluginRender("gacha-plugin")("gacha", "genshin", {
+      save_id: user_id,
+      name: name,
+      info: info,
+      list: list,
+      poolName: poolName,
+      fiveNum:res5.length,
     });
+    thegachadata.push(base64);
+    if (base64) {
+      redis.set(key, JSON.stringify(gachaData), {
+        EX: end.keyEnd,
+      });
+  }
+  }
 
-    let msg = segment.image(`base64://${base64}`);
+  let msgimage = [];
+  for (let shiliancishu =0;shiliancishu<gachatimes;shiliancishu++)
+  {
+    let image = segment.image(`base64://${thegachadata[shiliancishu]}`);
+    msgimage.push(image);
+  }
+  let msg = [...msgimage];
     let msgRes = await e.reply(msg);
 
     if (msgRes && msgRes.message_id && e.isGroup && e.groupConfig.delMsg && res5.length <= 0 && resC4.length <= 2) {
@@ -298,7 +282,6 @@ export async function Genshingacha(e) {
         e.group.recallMsg(msgRes.message_id);
       }, e.groupConfig.delMsg);
     }
-  }
   return true;
 }
 
@@ -306,18 +289,6 @@ function getNowPool(upType) {
   let end, up4, up5, upW4, upW5, poolName, raw_up5;
   gachaChizi = JSON.parse(fs.readFileSync(`${_path}/plugins/gacha-plugin/resources/gacha/gacha.json`, "utf8"));
   //数据过时，刷新
-  if(new Date().getTime() >= new Date(gachaChizi.genshinUp.endTime).getTime()){
-    for (let val of gachaConfig) {
-      if (new Date().getTime() <= new Date(val.endTime).getTime()) {
-        end = val;
-        break;
-      }
-    }
-    if (!end) {
-      end = gachaConfig.pop();
-    }
-    gachaChizi.genshinUp = end;
-  }
 
   if(upType == 3 ){
     end = lodash.sample(gachaConfig);
@@ -648,4 +619,75 @@ function trownullelement(name) {
     name="null";
   }
   return name;
+}
+
+function getacharacter5(gachaData,wai,up5,role5){
+  if (gachaData.isUp5 == 1) {
+    wai = 100;
+  }
+  let tmp_name = "";
+  let isBigUP = false;
+  //当祈愿获取到5星角色时，有50%的概率为本期UP角色
+  if (getRandomInt(100) <= wai) {
+    if (gachaData.isUp5 == 1) {
+      isBigUP = true;
+    }
+    //大保底清零
+    gachaData.isUp5 = 0;
+    //up 5星
+    tmp_name = up5[getRandomInt(up5.length)];
+  } else {
+    //大保底
+    gachaData.isUp5 = 1;
+    tmp_name = role5[getRandomInt(role5.length)];
+  }
+  return {name:tmp_name,BigUP:isBigUP,returnData:gachaData};
+}
+
+function geta4(gachaData,up4,role4,weapon4,typeconfig){
+  if (gachaData.isUp4 == 1) {
+    gachaData.isUp4 = 0;
+    var tmpUp = 100;
+  } else {
+    var tmpUp = 50;
+  }
+  let tmpname,type=typeconfig;
+  //当祈愿获取到4星物品时，有50%的概率为本期UP
+  if (getRandomInt(100) <= tmpUp) {
+    //up 4星
+    tmpname = up4[getRandomInt(up4.length)];
+  } else {
+    gachaData.isUp4 = 1;
+    //一半概率武器 一半4星
+    if (getRandomInt(100) <= 50) {
+      tmpname=role4[getRandomInt(role4.length)];
+      type= "character";
+    } else {
+      tmpname=weapon4[getRandomInt(weapon4.length)];
+      type= "weapon";
+    }
+  }
+  return {name : tmpname,type : type,returnData : gachaData};
+}
+
+
+function getagachastar(gachaData, type) {
+  let [x, y] = ["gacha.c5", "gacha.c4"];
+  let [dx, dy] = [60, 510];
+  if (type === "weapon") {
+    [x, y] = ["gacha.w5", "gacha.w4"];
+    [dx, dy] = [70, 600];
+  }
+  let tmpChance5 = Gcfun.getthechance(getchance(x, dx), gachaData.num5, gachaData.week.num);
+  //抽中五星
+  if (getRandomInt(10000) <= tmpChance5) {
+    return 5;
+  }
+  let tmpChance4 = Gcfun.getthechance4(getchance(y, dy), gachaData.num4);
+  //抽中四星
+  if (getRandomInt(10000) <= tmpChance4) {
+    return 4;
+  }
+  //随机三星武器
+  return 3;
 }

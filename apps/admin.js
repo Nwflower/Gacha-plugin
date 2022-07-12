@@ -86,14 +86,14 @@ export async function sysCfg(e, { render }) {
 				}
 				let role1=[];
 				let role2=[];
-				role1.unshift(arr[0]);
+				role1.push(arr[0]);
 				if(arr.length==1){
 					role2.push(arr[0]);
 				}else {
 					role2.push(arr[1]);
 				}
-				gachaChizi.genshinUp.up5[0]=role1;
-				gachaChizi.genshinUp.up5_2[0]=role2;
+				gachaChizi.genshinUp.up5[0]=role1[0];
+				gachaChizi.genshinUp.up5_2[0]=role2[0];
 				fs.writeFileSync(`${resPath}/gacha/gacha.json`, JSON.stringify(gachaChizi, null, "\t"));
 				cfgKey = false;//取消独立验证
 				break;

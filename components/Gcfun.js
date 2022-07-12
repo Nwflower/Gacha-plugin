@@ -74,6 +74,8 @@ let Gcfun = {
     }
      return tmpChance4;
   }
+
+
 };
 
 export default Gcfun;
