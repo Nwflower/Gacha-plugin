@@ -191,6 +191,7 @@ export async function Genshingacha(e) {
     return true;
   }
   let thegachadata = [];
+  let res5global=true,res4global=true;
   for (let shiliancishu =0;shiliancishu<gachatimes;shiliancishu++) {
 
     //每日抽卡数+1
@@ -222,12 +223,12 @@ export async function Genshingacha(e) {
           break;
         case 4:
           gachaData.num4 = 0;
-          thisgacha = geta4(gachaData, up4, role4, weapon4);
+          thisgacha = geta4(gachaData, up4, role4, weapon4,"character");
           gachaData = thisgacha.returnData;
           if (thisgacha.type = "character") {
-            redispushdata(resC4, thisgacha.name, 4, "character", undefined)
+            redispushdata(resC4, thisgacha.name, 4, "character", undefined);
           } else {
-            redispushdata(resW4, thisgacha.name, 4, "weapon", undefined)
+            redispushdata(resW4, thisgacha.name, 4, "weapon", undefined);
           }
           ;
           break;
@@ -265,7 +266,9 @@ export async function Genshingacha(e) {
       redis.set(key, JSON.stringify(gachaData), {
         EX: end.keyEnd,
       });
-  }
+    }
+    if(res5.length > 0) res5global = false;
+    if(resC4.length >= 4)res4global = false;
   }
 
   let msgimage = [];
@@ -277,7 +280,7 @@ export async function Genshingacha(e) {
   let msg = [...msgimage];
     let msgRes = await e.reply(msg);
 
-    if (msgRes && msgRes.message_id && e.isGroup && e.groupConfig.delMsg && res5.length <= 0 && resC4.length <= 2) {
+    if (msgRes && msgRes.message_id && e.isGroup && e.groupConfig.delMsg && res5global && res4global) {
       setTimeout(() => {
         e.group.recallMsg(msgRes.message_id);
       }, e.groupConfig.delMsg);
