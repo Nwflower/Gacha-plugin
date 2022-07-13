@@ -225,7 +225,7 @@ export async function Genshingacha(e) {
           gachaData.num4 = 0;
           thisgacha = geta4(gachaData, up4, role4, weapon4,"character");
           gachaData = thisgacha.returnData;
-          if (thisgacha.type = "character") {
+          if (thisgacha.types === "character") {
             redispushdata(resC4, thisgacha.name, 4, "character", undefined);
           } else {
             redispushdata(resW4, thisgacha.name, 4, "weapon", undefined);
@@ -670,7 +670,7 @@ function geta4(gachaData,up4,role4,weapon4,typeconfig){
       type= "weapon";
     }
   }
-  return {name : tmpname,type : type,returnData : gachaData};
+  return {name : tmpname,types : type,returnData : gachaData};
 }
 
 
