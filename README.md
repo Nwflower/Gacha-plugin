@@ -33,7 +33,7 @@ git clone https://gitee.com/Nwflower/Gacha-plugin.git ./plugins/gacha-plugin/
 ```
 
 #### 更新
-发送命令 `#抽卡更新`
+发送命令 `#抽卡更新` 即可实现更新操作
 
 #### 命令说明
 1. 继承了原抽卡命令`#十连`等
@@ -43,7 +43,6 @@ git clone https://gitee.com/Nwflower/Gacha-plugin.git ./plugins/gacha-plugin/
 5. 使用`#抽卡版本`查看当前版本 
 
 #### 其他
-
 - 最后再求个star，你的支持是维护本项目的动力~~
 - 图片素材来源于网络，仅供交流学习使用
 - 严禁用于任何商业用途和非法行为
