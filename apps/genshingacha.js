@@ -272,19 +272,34 @@ export async function Genshingacha(e) {
   }
 
   let msgimage = [];
+  let tomsg = [];
+
   for (let shiliancishu =0;shiliancishu<gachatimes;shiliancishu++)
   {
     let image = segment.image(`base64://${thegachadata[shiliancishu]}`);
     msgimage.push(image);
+    tomsg.push({
+      message: image,
+      nickname: Bot.nickname,
+      user_id: Bot.uin
+    })
   }
-  let msg = [...msgimage];
-    let msgRes = await e.reply(msg);
+    let msg = [...msgimage];
+    let msgRes= {};
+  if(gachatimes === 1)
+  {
+    msgRes = await e.reply(msg);
+  }else {
+    msgRes = await e.reply(await e.group.makeForwardMsg(tomsg));
+  }
 
     if (msgRes && msgRes.message_id && e.isGroup && e.groupConfig.delMsg && res5global && res4global) {
       setTimeout(() => {
         e.group.recallMsg(msgRes.message_id);
       }, e.groupConfig.delMsg);
-    }
+  }
+
+
   return true;
 }
 
