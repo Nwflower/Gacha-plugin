@@ -15,8 +15,6 @@
 4. 更多的十连：支持二十连、三十连、四十连、百连等
 
 
-#### 已经鸽了的预计功能
-1. 更多的卡池：明日方舟抽卡、王者荣耀抽奖等
 
 #### 使用说明
 
@@ -34,17 +32,15 @@ git clone https://github.com/Nwflower/gacha-plugin.git ./plugins/gacha-plugin/
 git clone https://gitee.com/Nwflower/Gacha-plugin.git ./plugins/gacha-plugin/
 ```
 
+#### 更新
+发送命令 `#抽卡更新`
 
 #### 命令说明
 1. 继承了原抽卡命令`#十连`等
 2. 打开设置使用`#抽卡设置`设置重要参数等
 3. 覆盖开关默认打开
 4. 更多的抽卡，如`#三十连` `#六十连` 以及你最高可以说`#百连`！
-
-#### 软件架构
-/app js功能
-/resource 资源文件
-
+5. 使用`#抽卡版本`查看当前版本 
 
 #### 其他
 

@@ -24,7 +24,7 @@ let Gcfun = {
     let tmpChance5 = chance_default;
 
     //增加双黄概率
-    if ( gdwn == 1) {
+    if ( gdwn === 1) {
       tmpChance5 = chance_default * 2;
     }
     //90次都没中五星
@@ -44,7 +44,7 @@ let Gcfun = {
 
   gettheweaponchance(chance_default,gachanum,gdwn){
     let tmpChance5 = chance_default;
-    if ( gdwn == 1) {
+    if ( gdwn === 1) {
       tmpChance5 = chance_default * 3;
     }
     if (gachanum >= 80) {
@@ -74,7 +74,6 @@ let Gcfun = {
     }
      return tmpChance4;
   }
-
 
 };
 

@@ -1,22 +1,23 @@
 //引入插件
 import lodash from "lodash";
-import schedule from "node-schedule";
 import {gachaDIY} from './apps/gachaDIY.js';
 import { Genshingacha,weaponBing } from './apps/genshingacha.js';
-
+import { versionInfo } from './apps/version.js';
 import { currentVersion } from "./components/Changelog.js";
-import { rule as adminRule, sysCfg, } from "./apps/admin.js";
+import { rule as adminRule, sysCfg,updateGachaPlugin } from "./apps/admin.js";
 
 export {
   gachaDIY,
   Genshingacha,
+  versionInfo,
   weaponBing,
+  updateGachaPlugin,
   sysCfg,
 };
 
 let rule = {
   gachaDIY: {
-    reg: "^#*(10|[武器池]*[十]+|抽|单)[连抽卡奖][123武器池]*$",
+    reg: "^#*(10|[武器池]*([一二三四五六七八九]?[十百]+)|抽|单)[连抽卡奖][123武器池]*$",
     describe: "自定义抽卡",
   },
   Genshingacha: {
@@ -26,6 +27,10 @@ let rule = {
   weaponBing: {
     reg: "^#*定轨$",
     describe: "【定轨】武器池定轨",
+  },
+  versionInfo: {
+    reg: "^#?抽卡版本$",
+    describe: "【#版本】抽卡插件版本介绍",
   },
   ...adminRule
 };
@@ -38,4 +43,4 @@ lodash.forEach(rule, (r) => {
 
 export { rule };
 
-console.log(`抽卡插件${currentVersion}初始化~`);
+console.log(`抽卡插件${currentVersion}载入完毕,感谢您的使用`);
