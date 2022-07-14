@@ -286,7 +286,7 @@ export async function Genshingacha(e) {
   }
     let msg = [...msgimage];
     let msgRes= {};
-  if(gachatimes === 1)
+  if(gachatimes === 1 || !Cfg.get("gacha.mode",true) || !e.isGroup)
   {
     msgRes = await e.reply(msg);
   }else {

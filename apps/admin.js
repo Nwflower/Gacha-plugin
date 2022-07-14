@@ -10,6 +10,7 @@ const require = createRequire(import.meta.url);
 let cfgMap = {
 	"自定义": "gacha.DIY",
 	"卡池模式": "gacha.type",
+	"多连转发": "gacha.mode",
 	"小保底": "gacha.wai",
 	"五星角色概率": "gacha.c5",
 	"四星角色概率": "gacha.c4",
@@ -194,6 +195,7 @@ export async function sysCfg(e, { render }) {
 		gachacharact4: Cfg.get("gacha.c4", 510),
 		gachaweapon5: Cfg.get("gacha.w5", 70),
 		gachaweapon4: Cfg.get("gacha.w4", 600),
+		gachamode: getStatus("gacha.mode", true),
 	}
 
 	let gachaconfigchance = ((Cfg.get("gacha.wai", 50)===50)&&(Cfg.get("gacha.c5", 60)===60)&&(Cfg.get("gacha.c4", 510)===510)&&(Cfg.get("gacha.w5", 70)===70)&&(Cfg.get("gacha.w4", 600)===600))? "无需复位":"可复位";
