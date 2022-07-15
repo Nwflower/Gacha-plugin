@@ -5,6 +5,12 @@ import { Genshingacha,weaponBing } from './apps/genshingacha.js';
 import { versionInfo } from './apps/version.js';
 import { currentVersion } from "./components/Changelog.js";
 import { rule as adminRule, sysCfg,updateGachaPlugin } from "./apps/admin.js";
+import fs from "fs";
+
+
+const _path = process.cwd();
+const gachaPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha.json`;
+const gachadefaultPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha_default.json`;
 
 export {
   gachaDIY,
@@ -42,5 +48,12 @@ lodash.forEach(rule, (r) => {
 });
 
 export { rule };
+
+try {
+  if (!fs.existsSync(gachaPath)) {
+    fs.writeFileSync(gachaPath, fs.readFileSync(gachadefaultPath, "utf8"));
+  }
+} catch (e) {
+}
 
 console.log(`抽卡插件${currentVersion}载入完毕,感谢您的使用`);

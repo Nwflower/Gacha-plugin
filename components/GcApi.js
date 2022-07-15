@@ -14,7 +14,7 @@ export function getagachastar(gachaData, type){
   if (getRandomInt(10000) <= tmpChance5) {
     return 5;
   }
-  let tmpChance4 = Gcfun.getthechance4(getChance(y, dy), gachaData.weapon.num4);
+  let tmpChance4 = type === "character" ? Gcfun.getthechance4(getChance(x, dx), gachaData.num4) :Gcfun.getthechance4(getChance(y, dy), gachaData.weapon.num4);
   //抽中四星
   if (getRandomInt(10000) <= tmpChance4) {
     return 4;

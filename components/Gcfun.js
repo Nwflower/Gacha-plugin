@@ -2,15 +2,6 @@ import fs from "fs";
 
 const _path = process.cwd();
 const gachaPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha.json`;
-const gachadefaultPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha_default.json`;
-
-
-try {
-  if (!fs.existsSync(gachaPath)) {
-    fs.writeFileSync(gachaPath, fs.readFileSync(gachadefaultPath, "utf8"));
-  }
-} catch (e) {
-}
 
 let Gcfun = {
 
