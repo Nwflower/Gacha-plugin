@@ -23,6 +23,14 @@ if (!fs.existsSync(`./data/html/genshin/gacha/`)) {
 }
 
 const _path = process.cwd();
+const gachaPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha.json`;
+const gachadefaultPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha_default.json`;
+try {
+  if (!fs.existsSync(gachaPath)) {
+    fs.writeFileSync(gachaPath, fs.readFileSync(gachadefaultPath, "utf8"));
+  }
+} catch (e) {
+}
 let gachaChizi= JSON.parse(fs.readFileSync(`${_path}/plugins/gacha-plugin/resources/gacha/gacha.json`, "utf8"));
 
 //五星角色
@@ -45,6 +53,8 @@ let genshin = {};
 await init();
 
 export async function init(isUpdate) {
+
+
   gachaConfig = JSON.parse(fs.readFileSync("./config/genshin/gacha.json", "utf8"));
   element = JSON.parse(fs.readFileSync("./config/genshin/element.json", "utf8"));
   let version = isUpdate ? new Date().getTime() : 0;

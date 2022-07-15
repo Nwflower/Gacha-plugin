@@ -19,6 +19,14 @@ export const rule = {
 let role5 = [],weapon5 = [],role4 = [],weapon4 = [], weapon3 = [], count = {}, element = {}, genshin = {}, files ={};
 await init();
 export async function init(isUpdate) {
+  
+  try {
+  if (!fs.existsSync(gachaPath)) {
+    fs.writeFileSync(gachaPath, fs.readFileSync(gachadefaultPath, "utf8"));
+  }
+} catch (e) {
+}
+
   //创建html文件夹
   if (!fs.existsSync(`./data/html/genshin/gacha/`)) {
     fs.mkdirSync(`./data/html/genshin/gacha/`);
