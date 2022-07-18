@@ -15,6 +15,9 @@
 4. 更多的十连：支持二十连、三十连、四十连、百连等
 
 
+#### Gacha-plugin
+交流群：240979646
+感谢素材提供 SunRy曉K(QQ1509293009) ZDPLM(QQ2895699730)
 
 #### 使用说明
 
@@ -47,9 +50,6 @@ git clone https://gitee.com/Nwflower/Gacha-plugin.git ./plugins/gacha-plugin/
 - 图片素材来源于网络，仅供交流学习使用
 - 严禁用于任何商业用途和非法行为
 
-#### Gacha-plugin
-交流群：240979646
-感谢素材提供 我叫阿sir不叫同志(1509293009) ZDPLM(2895699730)
 
 #### 其他插件
 [Yunzai-Bot插件索引](https://gitee.com/Hikari666/Yunzai-Bot-plugins-index) 
