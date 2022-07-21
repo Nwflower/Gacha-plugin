@@ -555,14 +555,14 @@ export async function weaponBing(e) {
     gachaData.weapon.type++;
     gachaData.weapon.bingWeapon = upW5[gachaData.weapon.type - 1];
     for(let i in upW5){
-      if(gachaData.weapon.type - 1 === i){
+      if(Number(gachaData.weapon.type - 1) === Number(i)){
         msg.push(`[√] ${upW5[i]}`);
       }
       else{
         msg.push(`[  ] ${upW5[i]}`);
       }
     }
-    msg = " 定轨成功\n" + msg.join("\n");
+    msg = "当前定轨\n" + msg.join("\n");
   }
   gachaData.weapon.lifeNum = 0;
   await global.redis.set(key, JSON.stringify(gachaData), {
