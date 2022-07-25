@@ -3,8 +3,10 @@ import {createRequire} from "module";
 import {Cfg , Gcfun} from "../components/index.js";
 import Common from "../components/Common.js";
 import fs from "fs";
-import { roleIdToName } from "../../../lib/app/mysInfo.js";
+import gsCfg from '../model/gsCfg.js'
 import { exec } from "child_process";
+import {isV3} from "../components/Changelog.js";
+import { segment } from "oicq";
 
 const require = createRequire(import.meta.url);
 
@@ -27,7 +29,7 @@ let cfgMap = {
 };
 
 let sysCfgReg = `^#抽卡设置\s*(${lodash.keys(cfgMap).join("|")})?\s*(.*)$`;
-let genshin = await import(`../../../config/genshin/roleId.js`);
+let genshin = await import(`../resources/gacha/roleId.js`);
 export const rule = {
 	sysCfg: {
 		hashMark: true,
@@ -97,8 +99,8 @@ export async function sysCfg(e, { render }) {
 				}else {
 					role2.push(arr[1]);
 				}
-				gachaChizi.genshinUp.up5[0]=role1[0];
-				gachaChizi.genshinUp.up5_2[0]=role2[0];
+				gachaChizi.genshinUp.up5[0]=getName(role1[0]);
+				gachaChizi.genshinUp.up5_2[0]=getName(role2[0]);
 				fs.writeFileSync(`${resPath}/gacha/gacha.json`, JSON.stringify(gachaChizi, null, "\t"));
 				cfgKey = false;//取消独立验证
 				break;
@@ -162,7 +164,8 @@ export async function sysCfg(e, { render }) {
 				cfgKey = false;//取消独立验证
 				break;
 			case "gacha.get":
-				let gachaConfig = JSON.parse(fs.readFileSync("./config/genshin/gacha.json", "utf8"));
+				let gachaConfig = JSON.parse(fs.readFileSync(`${_path}/plugins/gacha-plugin/resources/config/gacha.json`,"utf-8"));
+				if (!isV3)  gachaConfig = JSON.parse(fs.readFileSync("./config/genshin/gacha.json", "utf8"));
 				let end = {} ;
 				for (let val of gachaConfig) {
 					if (new Date().getTime() <= new Date(val.endTime).getTime()) {
@@ -205,14 +208,20 @@ export async function sysCfg(e, { render }) {
 	let gachaconfigchance = ((Cfg.get("gacha.wai", 50)===50)&&(Cfg.get("gacha.c5", 60)===60)&&(Cfg.get("gacha.c4", 510)===510)&&(Cfg.get("gacha.w5", 70)===70)&&(Cfg.get("gacha.w4", 600)===600))? "无需复位":"可复位";
 
 	console.log(cfg)
-	return await Common.render("admin/index", {
-		gachaconfigchance,
-		genshincharact5,
-		genshincharact4,
-		genshinweapon5,
-		genshinweapon4,
-		...cfg,
-  	}, { e, render, scale: 1.4 });
+	let base64 = await Common.render("admin/index", {
+			gachaconfigchance,
+			genshincharact5,
+			genshincharact4,
+			genshinweapon5,
+			genshinweapon4,
+			...cfg,
+		}, { e, render, scale: 1.4 });
+	if(isV3){
+		await e.reply(base64);
+	}else {
+		await e.reply(segment.image(`base64://${base64}`));
+	}
+	return true;
 }
 
 const checkAuth = async function(e) {
@@ -228,7 +237,7 @@ const getshortName = function (genshinname){
 }
 
 const getName = function(genshinname) {
-	return roleIdToName(roleIdToName(genshinname),true);
+	return gsCfg.roleIdToName(gsCfg.roleNameToID(genshinname),true);
 }
 
 const getarrName =  function(alotofname) {
@@ -264,7 +273,7 @@ const getRandomInt = function(max = 10000) {
 }
 
 const getchastar = function(Name){
-	return genshin.roleId5.includes(Number(roleIdToName(Name))) ? 5 : 4
+	return genshin.roleId5.includes(Number(gsCfg.roleNameToID(Name))) ? 5 : 4
 }
 
 const getrandomcharact = function(star){

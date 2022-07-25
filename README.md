@@ -8,6 +8,11 @@
 /components/cfg.json
 /resources/gacha.json
 
+V2版本安装报错指令引入包
+```
+cnpm i yaml
+```
+
 #### 已经实现的功能
 1. 自定义抽卡人物：如科莱、伽罗、刑天铠甲等
 2. 基于命令修改卡池概率

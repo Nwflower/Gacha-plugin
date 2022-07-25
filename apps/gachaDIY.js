@@ -1,12 +1,17 @@
-import { getPluginRender } from "../../../lib/render.js";
 import { segment } from "oicq";
 import lodash from "lodash";
 import fs from "fs";
-import { Cfg,Gcfun } from "../components/index.js";
+import { Cfg,Common } from "../components/index.js";
 import { getagachastar, getRandomInt, getTimes, hasGacha } from "../components/GcApi.js";
+import {isV3} from "../components/Changelog.js";
 const _pth = process.cwd();
 const _gth = _pth+"/plugins/gacha-plugin";
-
+import Data from "../components/Data.js";
+import YAML from "yaml";
+let render;
+if (isV3) {
+  render = await import('../adapter/render.js');
+}
 export const rule = {
   gachaDIY: {
     reg: "^#*(10|[武器池]*([一二三四五六七八九]?[十百]+)|抽|单)[连抽卡奖][123武器池]*$",
@@ -27,10 +32,10 @@ export async function init(isUpdate) {
 } catch (e) {
 }
 
-  //创建html文件夹
-  if (!fs.existsSync(`./data/html/genshin/gacha/`)) {
-    fs.mkdirSync(`./data/html/genshin/gacha/`);
-  }
+  // //创建html文件夹
+  // if (!fs.existsSync(`./data/html/genshin/gacha/`)) {
+  //   fs.mkdirSync(`./data/html/genshin/gacha/`);
+  // }
   //角色类型json文件
   element = JSON.parse(fs.readFileSync(_pth+"/plugins/gacha-plugin/resources/gacha/element.json", "utf8"));
   let version = isUpdate ? new Date().getTime() : 0;
@@ -57,7 +62,7 @@ function getchance(key, config){
 }
 
 //#十连
-export async function gachaDIY(e) {
+export async function gachaDIY(e,{render}) {
   if (e.img || e.hasReply || !Cfg.get("gacha.DIY", true) || Cfg.get("gacha.type", 1) !== 0) {
     return false;
   }
@@ -65,10 +70,29 @@ export async function gachaDIY(e) {
   let name = e.sender.card;
   let type = e.msg.includes("武器") ? "weapon" : "role";
 
+  let dayNum;
+  let LimitSeparate;
+  let recalltime;
   //每日抽卡次数
-  let dayNum = e.groupConfig.gachaDayNum || 1;
-  //角色，武器抽卡限制是否分开
-  let LimitSeparate = e.groupConfig.LimitSeparate || 0;
+  if(!isV3) {
+    dayNum = e.groupConfig.gachaDayNum || 1;
+    //角色，武器抽卡限制是否分开
+    LimitSeparate = e.groupConfig.LimitSeparate || 0;
+    recalltime = e.groupConfig.delMsg
+  }else {
+    let set
+    let config = YAML.parse(fs.readFileSync(`./plugins/genshin/config/gacha.set.yaml`, 'utf8'))
+    let def = config.default
+    if (config[e.group_id]) {
+      set = { ...def, ...config[groupId] }
+    } else {
+      set = def
+    }
+    dayNum = set.count
+    LimitSeparate = set.LimitSeparate
+    recalltime = set.delMsg
+  }
+
   let key = `genshin:gacha:${user_id}`;
   let gachaData = await global.redis.get(key);
 
@@ -123,7 +147,7 @@ export async function gachaDIY(e) {
     return true;
   }
   if (e.msg.includes("武器")) {
-    return gachaWeapon(e, gachaData);
+    return gachaWeapon(e, gachaData,render);
   }
 
   let thegachadata = [];
@@ -178,13 +202,13 @@ export async function gachaDIY(e) {
       info = "";
     }
 
-    let base64 = await getPluginRender("gacha-plugin")("gacha", "gacha", {
+    let base64 = await Common.render("gacha/gacha", {
       save_id: user_id,
       name: name,
       info: info,
       list: list,
       fiveNum: res5.length,
-    });
+    }, { e, render, scale: 1.4 })
     thegachadata.push(base64);
     if (base64) {
       redis.set(key, JSON.stringify(gachaData), {
@@ -198,7 +222,7 @@ export async function gachaDIY(e) {
   let msgimage = [];
   let tomsg = [];
   for (let shiliancishu = 0; shiliancishu < gachatimes; shiliancishu++) {
-    let image = segment.image(`base64://${thegachadata[shiliancishu]}`);
+    let image = isV3 ? thegachadata[shiliancishu] : segment.image(`base64://${thegachadata[shiliancishu]}`);
     msgimage.push(image);
     tomsg.push({
       message: image,
@@ -213,10 +237,10 @@ export async function gachaDIY(e) {
   } else {
     msgRes = await e.reply(await e.group.makeForwardMsg(tomsg));
   }
-  if (msgRes && msgRes.message_id && e.isGroup && e.groupConfig.delMsg && res5global && res4global) {
+  if (msgRes && msgRes.message_id && e.isGroup && recalltime && res5global && res4global) {
     setTimeout(() => {
       e.group.recallMsg(msgRes.message_id);
-    }, e.groupConfig.delMsg);
+    }, recalltime);
   }
   return true;
 }
@@ -245,10 +269,33 @@ function getEnd() {
 }
 
 //#十连武器
-async function gachaWeapon(e, gachaData) {
+async function gachaWeapon(e, gachaData,render) {
   let user_id = e.user_id;
   //角色，武器抽卡限制是否分开
-  let LimitSeparate = e.groupConfig.LimitSeparate || 0;
+  let name = e.sender.card;
+  let dayNum;
+  let LimitSeparate;
+  let recalltime;
+  //每日抽卡次数
+  if(!isV3) {
+    dayNum = e.groupConfig.gachaDayNum || 1;
+    //角色，武器抽卡限制是否分开
+    LimitSeparate = e.groupConfig.LimitSeparate || 0;
+    recalltime = e.groupConfig.delMsg
+  }else {
+    let set
+    let config = YAML.parse(fs.readFileSync(`./plugins/genshin/config/gacha.set.yaml`, 'utf8'))
+    let def = config.default
+    if (config[e.group_id]) {
+      set = { ...def, ...config[groupId] }
+    } else {
+      set = def
+    }
+    dayNum = set.count
+    LimitSeparate = set.LimitSeparate
+    recalltime = set.delMsg
+  }
+
   //初始化数据
   if (!gachaData.weapon) {
     gachaData.weapon = {
@@ -319,14 +366,14 @@ async function gachaWeapon(e, gachaData) {
       info = `${role5.name}「${role5.num}抽」`;
     }
     //制图
-    let base64 = await getPluginRender("gacha-plugin")("gacha", "gacha", {
+    let base64 = await Common.render("gacha/gacha", {
       save_id: user_id,
-      name: e.sender.card,
+      name: name,
       info: info,
       list: list,
-      isWeapon: true,
       fiveNum: res5.length,
-    });
+    }, { e, render, scale: 1.4 })
+
     thegachadata.push(base64);
     if (res5.length > 0) res5global = false;
     if (resC4.length >= 4) res4global = false;
@@ -334,7 +381,7 @@ async function gachaWeapon(e, gachaData) {
   let msgimage = [];
   let tomsg = [];
   for (let shiliancishu = 0; shiliancishu < gachatimes; shiliancishu++) {
-    let image = segment.image(`base64://${thegachadata[shiliancishu]}`);
+    let image = isV3 ? thegachadata[shiliancishu] : segment.image(`base64://${thegachadata[shiliancishu]}`);
     msgimage.push(image);
     tomsg.push({
       message: image,
@@ -349,10 +396,10 @@ async function gachaWeapon(e, gachaData) {
   } else {
     msgRes = await e.reply(await e.group.makeForwardMsg(tomsg));
   }
-  if (msgRes && msgRes.message_id && e.isGroup && e.groupConfig.delMsg && res5global && res4global) {
+  if (msgRes && msgRes.message_id && e.isGroup && recalltime && res5global && res4global) {
     setTimeout(() => {
       e.group.recallMsg(msgRes.message_id);
-    }, e.groupConfig.delMsg);
+    }, recalltime);
   }
   return true;
 }

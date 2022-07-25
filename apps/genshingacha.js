@@ -1,9 +1,15 @@
-import { getPluginRender } from "../../../lib/render.js";
 import { segment } from "oicq";
 import lodash from "lodash";
 import fs from "fs";
-import { Cfg } from "../components/index.js";
+import { Cfg, Common } from "../components/index.js";
 import { getagachastar, getTimes, hasGacha } from "../components/GcApi.js";
+import { isV3 } from '../components/Changelog.js'
+import Data from "../components/Data.js";
+import YAML from "yaml";
+let render;
+if (isV3) {
+  render = await import('../adapter/render.js');
+}
 export const rule = {
   Genshingacha: {
     reg: "^#*(10|[武器池]*([一二三四五六七八九]?[十百]+)|抽|单)[连抽卡奖][123武器池]*$",
@@ -18,8 +24,11 @@ export const rule = {
 };
 
 //创建html文件夹
-if (!fs.existsSync(`./data/html/genshin/gacha/`)) {
-  fs.mkdirSync(`./data/html/genshin/gacha/`);
+if(!isV3){
+
+  if (!fs.existsSync(`./data/html/genshin/gacha/`)) {
+    fs.mkdirSync(`./data/html/genshin/gacha/`);
+  }
 }
 
 const _path = process.cwd();
@@ -53,17 +62,15 @@ let genshin = {};
 await init();
 
 export async function init(isUpdate) {
-
-
-  gachaConfig = JSON.parse(fs.readFileSync("./config/genshin/gacha.json", "utf8"));
-  element = JSON.parse(fs.readFileSync("./config/genshin/element.json", "utf8"));
+  gachaConfig = JSON.parse(fs.readFileSync(`${_path}/plugins/gacha-plugin/resources/config/gacha.json`, "utf8"));
+  element = JSON.parse(fs.readFileSync(`${_path}/plugins/gacha-plugin/resources/config/element.json`, "utf8"));
   let version = isUpdate ? new Date().getTime() : 0;
-  genshin = await import(`../../../config/genshin/roleId.js?version=${version}`);
+  genshin = await import(`../resources/config/roleId.js?version=${version}`);
   count = {};
 }
 
 //#十连
-export async function Genshingacha(e) {
+export async function Genshingacha(e,{render}) {
   if (e.img || e.hasReply || !Cfg.get("gacha.DIY", true) || Cfg.get("gacha.type", 1) !== 1) {
     return;
   }
@@ -79,11 +86,29 @@ export async function Genshingacha(e) {
     upType = 3;
   }
 
-
+  let dayNum;
+  let LimitSeparate;
+  let recalltime;
   //每日抽卡次数
-  let dayNum = e.groupConfig.gachaDayNum || 1;
-  //角色，武器抽卡限制是否分开
-  let LimitSeparate = e.groupConfig.LimitSeparate || 0;
+  if(!isV3) {
+    dayNum = e.groupConfig.gachaDayNum || 1;
+    //角色，武器抽卡限制是否分开
+    LimitSeparate = e.groupConfig.LimitSeparate || 0;
+    recalltime = e.groupConfig.delMsg
+  }else {
+    let set
+    let config = YAML.parse(fs.readFileSync(`./plugins/genshin/config/gacha.set.yaml`, 'utf8'))
+    let def = config.default
+    if (config[e.group_id]) {
+      set = { ...def, ...config[groupId] }
+    } else {
+      set = def
+    }
+    dayNum = set.count
+    LimitSeparate = set.LimitSeparate
+    recalltime = set.delMsg
+  }
+
   let key = `genshin:gacha:${user_id}`;
   let gachaData = await global.redis.get(key);
 
@@ -146,7 +171,7 @@ export async function Genshingacha(e) {
 
   let { up4, up5, upW4, upW5, poolName } = getNowPool(upType);
   if (e.msg.includes("武器")) {
-    return gachaWeapon(e, gachaData, upW4, upW5);
+    return gachaWeapon(e, gachaData, upW4, upW5,render);
   }
   //去除当前up的四星
   role4 = lodash.difference(role4, up4);
@@ -216,15 +241,15 @@ export async function Genshingacha(e) {
     } else if (res5.length >= 4) {
       info = "";
     }
-
-    let base64 = await getPluginRender("gacha-plugin")("gacha", "genshin", {
+    let base64 = await Common.render("gacha/genshin", {
       save_id: user_id,
       name: name,
       info: info,
       list: list,
       poolName: poolName,
       fiveNum: res5.length,
-    });
+    }, { e, render, scale: 1.4 })
+
     thegachadata.push(base64);
     if (base64) {
       await redis.set(key, JSON.stringify(gachaData), {
@@ -239,7 +264,7 @@ export async function Genshingacha(e) {
   let tomsg = [];
 
   for (let shiliancishu = 0; shiliancishu < gachatimes; shiliancishu++) {
-    let image = segment.image(`base64://${thegachadata[shiliancishu]}`);
+    let image = isV3 ? thegachadata[shiliancishu] : segment.image(`base64://${thegachadata[shiliancishu]}`);
     msgimage.push(image);
     tomsg.push({
       message: image,
@@ -254,11 +279,10 @@ export async function Genshingacha(e) {
   } else {
     msgRes = await e.reply(await e.group.makeForwardMsg(tomsg));
   }
-
-  if (msgRes && msgRes.message_id && e.isGroup && e.groupConfig.delMsg && res5global && res4global) {
+  if (msgRes && msgRes.message_id && e.isGroup && recalltime && res5global && res4global) {
     setTimeout(() => {
       e.group.recallMsg(msgRes.message_id);
-    }, e.groupConfig.delMsg);
+    }, recalltime);
   }
 
 
@@ -318,11 +342,31 @@ function getEnd() {
 }
 
 //#十连武器
-async function gachaWeapon(e, gachaData, upW4, upW5) {
+async function gachaWeapon(e, gachaData, upW4, upW5,render) {
   let user_id = e.user_id;
   //角色，武器抽卡限制是否分开
-  let LimitSeparate = e.groupConfig.LimitSeparate || 0;
-
+  let dayNum;
+  let LimitSeparate;
+  let recalltime;
+  //每日抽卡次数
+  if(!isV3) {
+    dayNum = e.groupConfig.gachaDayNum || 1;
+    //角色，武器抽卡限制是否分开
+    LimitSeparate = e.groupConfig.LimitSeparate || 0;
+    recalltime = e.groupConfig.delMsg
+  }else {
+    let set
+    let config = YAML.parse(fs.readFileSync(`./plugins/genshin/config/gacha.set.yaml`, 'utf8'))
+    let def = config.default
+    if (config[e.group_id]) {
+      set = { ...def, ...config[groupId] }
+    } else {
+      set = def
+    }
+    dayNum = set.count
+    LimitSeparate = set.LimitSeparate
+    recalltime = set.delMsg
+  }
   if (!gachaData.weapon) {
     gachaData.weapon = {
       num4: 0, //4星保底数
@@ -459,16 +503,17 @@ async function gachaWeapon(e, gachaData, upW4, upW5) {
     if (isBigUP) {
       info += "大保底";
     }
-    let base64 = await getPluginRender("gacha-plugin")("gacha", "genshin", {
+    let base64 = await Common.render("gacha/genshin", {
       save_id: user_id,
-      name: e.sender.card,
-      info: info,
-      list: list,
-      isWeapon: true,
-      bingWeapon: bingWeapon,
-      lifeNum: gachaData.weapon.lifeNum,
-      fiveNum: res5.length,
-    });
+        name: e.sender.card,
+        info: info,
+        list: list,
+        isWeapon: true,
+        bingWeapon: bingWeapon,
+        lifeNum: gachaData.weapon.lifeNum,
+        fiveNum: res5.length,
+    }, { e, render, scale: 1.4 })
+
     thegachadata.push(base64);
     if (res5.length > 0) res5global = false;
     if (resC4.length >= 4) res4global = false;
@@ -477,7 +522,7 @@ async function gachaWeapon(e, gachaData, upW4, upW5) {
   let msgimage = [];
   let tomsg = [];
   for (let shiliancishu = 0; shiliancishu < gachatimes; shiliancishu++) {
-    let image = segment.image(`base64://${thegachadata[shiliancishu]}`);
+    let image = isV3 ? thegachadata[shiliancishu] : segment.image(`base64://${thegachadata[shiliancishu]}`);
     msgimage.push(image);
     tomsg.push({
       message: image,
@@ -492,10 +537,10 @@ async function gachaWeapon(e, gachaData, upW4, upW5) {
   } else {
     msgRes = await e.reply(await e.group.makeForwardMsg(tomsg));
   }
-  if (msgRes && msgRes.message_id && e.isGroup && e.groupConfig.delMsg && res5global && res4global) {
+  if (msgRes && msgRes.message_id && e.isGroup && recalltime && res5global && res4global) {
     setTimeout(() => {
       e.group.recallMsg(msgRes.message_id);
-    }, e.groupConfig.delMsg);
+    }, recalltime);
   }
   return true;
 }

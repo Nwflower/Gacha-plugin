@@ -1,62 +1,31 @@
+// 适配V3 Yunzai，将index.js移至app/index.js
+import { currentVersion, isV3 } from './components/Changelog.js'
+import Data from './components/Data.js'
 
-import lodash from "lodash";
-import {gachaDIY} from './apps/gachaDIY.js';
-import { Genshingacha,weaponBing } from './apps/genshingacha.js';
-import { versionInfo } from './apps/version.js';
-import { currentVersion } from "./components/Changelog.js";
-import { rule as adminRule, sysCfg,updateGachaPlugin } from "./apps/admin.js";
-import fs from "fs";
-
-
-
-const _path = process.cwd();
-const gachaPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha.json`;
-const gachadefaultPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha_default.json`;
-
-try {
-  if (!fs.existsSync(gachaPath)) {
-    fs.writeFileSync(gachaPath, fs.readFileSync(gachadefaultPath, "utf8"));
-  }
-} catch (e) {
+export * from './apps/index.js'
+let index = { gacha: {} }
+if (isV3) {
+  index = await Data.importModule('/plugins/gacha-plugin/adapter', 'index.js')
 }
+export const gacha = index.gacha || {}
 
-export {
-  gachaDIY,
-  Genshingacha,
-  versionInfo,
-  weaponBing,
-  updateGachaPlugin,
-  sysCfg,
-};
+console.log(`抽卡插件${currentVersion}初始化~`)
 
-let rule = {
-  gachaDIY: {
-    reg: "^#*(10|[武器池]*([一二三四五六七八九]?[十百]+)|抽|单)[连抽卡奖][123武器池]*$",
-    describe: "自定义抽卡",
-  },
-  Genshingacha: {
-    reg: "^#*(10|[武器池]*([一二三四五六七八九]?[十百]+)|抽|单)[连抽卡奖][123武器池]*$",
-    describe: "【十连，十连2，十连武器】模拟原神抽卡",
-  },
-  weaponBing: {
-    reg: "^#*定轨$",
-    describe: "【定轨】武器池定轨",
-  },
-  versionInfo: {
-    reg: "^#?抽卡版本$",
-    describe: "【#版本】抽卡插件版本介绍",
-  },
-  ...adminRule
-};
-
-lodash.forEach(rule, (r) => {
-  r.priority = r.priority || 50;
-  r.prehash = true;
-  r.hashMark = true;
-});
-
-export { rule };
-
-
-
-console.log(`抽卡插件${currentVersion}载入完毕,感谢您的使用`);
+setTimeout(async function () {
+  let msgStr = await redis.get('gacha:restart-msg')
+  let relpyPrivate = async function () {
+  }
+  if (!isV3) {
+    let common = await Data.importModule('/lib', 'common.js')
+    if (common && common.relpyPrivate) {
+      relpyPrivate = common.relpyPrivate
+    }
+  }
+  if (msgStr) {
+    let msg = JSON.parse(msgStr)
+    await relpyPrivate(msg.qq, msg.msg)
+    await redis.del('gacha:restart-msg')
+    let msgs = [`当前抽卡版本: ${currentVersion}`, '您可使用 #抽卡版本 命令查看更新信息']
+    await relpyPrivate(msg.qq, msgs.join('\n'))
+  }
+}, 1000)
