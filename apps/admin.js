@@ -165,7 +165,6 @@ export async function sysCfg(e, { render }) {
 				break;
 			case "gacha.get":
 				let gachaConfig = JSON.parse(fs.readFileSync(`${_path}/plugins/gacha-plugin/resources/config/gacha.json`,"utf-8"));
-				if (!isV3)  gachaConfig = JSON.parse(fs.readFileSync("./config/genshin/gacha.json", "utf8"));
 				let end = {} ;
 				for (let val of gachaConfig) {
 					if (new Date().getTime() <= new Date(val.endTime).getTime()) {
