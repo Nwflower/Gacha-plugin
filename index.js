@@ -8,8 +8,12 @@ if (isV3) {
   index = await Data.importModule('/plugins/gacha-plugin/adapter', 'index.js')
 }
 export const gacha = index.gacha || {}
-
-console.log(`抽卡插件${currentVersion}初始化~`)
+if (Bot?.logger?.info) {
+  Bot.logger.info(`--------->_<---------`)
+  Bot.logger.info(`抽卡插件${currentVersion}很高兴为您服务~`)
+} else {
+  console.log(`抽卡插件${currentVersion}很高兴为您服务~`)
+}
 
 setTimeout(async function () {
   let msgStr = await redis.get('gacha:restart-msg')
@@ -17,8 +21,8 @@ setTimeout(async function () {
   }
   if (!isV3) {
     let common = await Data.importModule('/lib', 'common.js')
-    if (common && common.relpyPrivate) {
-      relpyPrivate = common.relpyPrivate
+    if (common && common.default && common.default.relpyPrivate) {
+      relpyPrivate = common.default.relpyPrivate
     }
   }
   if (msgStr) {

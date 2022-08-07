@@ -1,5 +1,6 @@
 import lodash from "lodash";
 import {gachaDIY} from './gachaDIY.js';
+import {GenshinRelife} from './GenshinRelife.js';
 import { Genshingacha,weaponBing } from './genshingacha.js';
 import { versionInfo } from './version.js';
 import { rule as adminRule, sysCfg,updateGachaPlugin } from "./admin.js";
@@ -19,6 +20,7 @@ try {
 
 export {
   gachaDIY,
+  GenshinRelife,
   Genshingacha,
   versionInfo,
   weaponBing,
@@ -42,6 +44,10 @@ let rule = {
   versionInfo: {
     reg: "^#?抽卡版本$",
     describe: "【#版本】抽卡插件版本介绍",
+  },
+  GenshinRelife: {
+    reg: "^#?转生$",
+    describe: "转生成某人",
   },
   ...adminRule
 };

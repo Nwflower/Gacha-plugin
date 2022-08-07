@@ -6,7 +6,7 @@
 #### 更新须知
 如果报错请删除配置文件
 /components/cfg.json
-/resources/gacha.json
+/resources/gacha/gacha.json
 
 V2版本安装报错指令引入包
 ```
