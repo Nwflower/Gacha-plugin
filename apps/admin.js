@@ -26,6 +26,7 @@ let cfgMap = {
 	"四星武器": "genshin.w4",
 	"随机卡池": "gacha.random",
 	"卡池同步": "gacha.get",
+	"转生间隔": "relife.time",
 };
 
 let sysCfgReg = `^#抽卡设置\s*(${lodash.keys(cfgMap).join("|")})?\s*(.*)$`;
@@ -179,6 +180,9 @@ export async function sysCfg(e, { render }) {
 				fs.writeFileSync(`${resPath}/gacha/gacha.json`, JSON.stringify(gachaChizi, null, "\t"));
 				cfgKey = false;//取消独立验证
 				break;
+			case "relife.time":
+				val = Math.min(1440, Math.max(1, val * 1));
+				break;
 			default:
 				val = !/关闭/.test(val);
 				break;
@@ -201,6 +205,7 @@ export async function sysCfg(e, { render }) {
 		gachacharact4: Cfg.get("gacha.c4", 510),
 		gachaweapon5: Cfg.get("gacha.w5", 70),
 		gachaweapon4: Cfg.get("gacha.w4", 600),
+		relifetime: Cfg.get("relife.time", 120),
 		gachamode: getStatus("gacha.mode", true),
 	}
 

@@ -1,5 +1,6 @@
 import { segment } from "oicq";
 import { resolve } from "path";
+import { Cfg } from "../components/index.js";
 
 let CD = {};
 
@@ -16,8 +17,9 @@ export const rule = {
 };
 
 export async function GenshinRelife(e) {
+  let cdtime = Cfg.get("relife.time", 120)
   if(CD[e.user_id] && !e.isMaster){
-    e.reply("每两小时只能投胎一次哦！");
+    e.reply("每"+cdtime+"分钟只能投胎一次哦！");
     return true;
   }
   CD[e.user_id] = true;
@@ -25,7 +27,7 @@ export async function GenshinRelife(e) {
     if (CD[e.user_id]) {
       delete CD[e.user_id];
     }
-  }, 7200000);
+  }, cdtime);
   var file = gachaPath + '/resources/GenshinRelife/';
   let number = Math.round(Math.random()*53+1);
 
