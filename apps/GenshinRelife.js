@@ -27,7 +27,7 @@ export async function GenshinRelife(e) {
     if (CD[e.user_id]) {
       delete CD[e.user_id];
     }
-  }, cdtime);
+  }, cdtime * 60 * 1000);
   var file = gachaPath + '/resources/GenshinRelife/';
   let number = Math.round(Math.random()*53+1);
 
