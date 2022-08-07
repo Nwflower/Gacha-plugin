@@ -165,7 +165,7 @@ export async function Genshingacha(e,{render}) {
 
   //如果次数已经用完,回复消息、返回true不再向下执行
   if (todayNum >= dayNum && !e.isMaster) {
-    e.reply(hasGacha(gachaData,e));
+    e.reply(hasGacha(gachaData,e,name));
     return true;
   }
 

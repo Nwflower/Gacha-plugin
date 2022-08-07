@@ -34,7 +34,7 @@ export function getTimes(e){
   return 1;
 }
 //检查是否抽取
-export function hasGacha(gachaData,e){
+export function hasGacha(gachaData,e,name){
   let msg = lodash.truncate(name, { length: 30 });
   if (gachaData.today.role.length > 0) {
     msg += "\n今日五星：";
