@@ -47,6 +47,16 @@ export const rule = {
 
 const _path = process.cwd();
 const resPath = `${_path}/plugins/gacha-plugin/resources`;
+const gachaPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha.json`;
+const gachadefaultPath = `${_path}/plugins/gacha-plugin/resources/gacha/gacha_default.json`;
+
+try {
+  if (!fs.existsSync(gachaPath)) {
+    fs.writeFileSync(gachaPath, fs.readFileSync(gachadefaultPath, "utf8"));
+  }
+} catch (e) {
+}
+
 let gachaChizi= JSON.parse(fs.readFileSync(`${resPath}/gacha/gacha.json`, "utf8"));
 
 export async function sysCfg(e, { render }) {
