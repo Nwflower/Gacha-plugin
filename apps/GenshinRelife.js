@@ -10,8 +10,8 @@ const gachaPath = `${_path}/plugins/gacha-plugin`;
 
 export const rule = {
   GenshinRelife: {
-    reg: "^#?转生$", //匹配消息正则，命令正则
-    priority: 1, //优先级，越小优先度越高
+    reg: "#?转生$", //匹配消息正则，命令正则
+    priority: 2, //优先级，越小优先度越高
     describe: "转生成某人", //【命令】功能说明
   },
 };

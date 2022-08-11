@@ -46,7 +46,7 @@ let rule = {
     describe: "【#版本】抽卡插件版本介绍",
   },
   GenshinRelife: {
-    reg: "^#?转生$",
+    reg: "#?转生$",
     describe: "转生成某人",
   },
   ...adminRule

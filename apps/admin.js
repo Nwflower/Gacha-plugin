@@ -14,7 +14,7 @@ let cfgMap = {
 	"自定义": "gacha.DIY",
 	"卡池模式": "gacha.type",
 	"多连转发": "gacha.mode",
-	"小保底": "gacha.wai",
+	"小保底概率": "gacha.wai",
 	"五星角色概率": "gacha.c5",
 	"四星角色概率": "gacha.c4",
 	"五星武器概率": "gacha.w5",
