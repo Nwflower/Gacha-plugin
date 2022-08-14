@@ -3,12 +3,12 @@
 
 基于喵喵插件为框架进行改编实现的yunzai-bot的拓展抽卡插件，旨在不修改原卡池信息的情况下提供自定义卡池的拓展
 
-#### 更新须知
-如果报错请删除配置文件
-/components/cfg.json
-/resources/gacha/gacha.json
+#### 适配性
+插件支持V3，但我们不建议您在V3上运行，V3请使用[V3版的抽卡插件](https://github.com/Nwflower/flower-plugin)
 
-V2版本安装报错指令引入包
+#### 更新须知
+
+安装报错指令请引入包
 ```
 cnpm i yaml
 ```
