@@ -191,7 +191,7 @@ export async function sysCfg(e, { render }) {
 				cfgKey = false;//取消独立验证
 				break;
 			case "relife.time":
-				val = Math.min(1440, Math.max(1, val * 1));
+				val = Math.min(1440, Math.max(0, val * 1));
 				break;
 			default:
 				val = !/关闭/.test(val);
